@@ -14,7 +14,7 @@ class Question():
         self.raw_string = raw_string
         if len(self.raw_string.split(" ")) > 2 and ("?" in self.raw_string):
             print("you entered a question!")
-            self.keywords = self.get_keywords_from_question()
+            self.keywords = self.get_keywords_from_question(self.raw_string)
             self.related_questions.append(raw_string)
         else:
             print("you entered keywords!")
