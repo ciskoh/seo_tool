@@ -21,7 +21,6 @@ class Question():
             self.raw_string = re.sub("[\W]", ",", self.raw_string)
             self.keywords = [k for k in self.raw_string.split(",") if len(k) > 0]
 
-
     def get_keywords_from_question(self, raw_string):
         """ basic keyword retrieval from question
         """

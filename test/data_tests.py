@@ -13,6 +13,7 @@ class Test_q_data(unittest.TestCase):
         print("\n testing with a question")
         q = Question("What is a damselfish?")
         self.assertEqual(len(q.keywords),2, "should be 2!")
+        self.assertEqual(len(q.related_questions), 1, "there should be one question!")
 
     def test_q_init_with_kw(self):
         print("\n testing with kws!")
@@ -25,6 +26,7 @@ class Test_q_data(unittest.TestCase):
         q = Question("bread, butter, jam")
         auto_q = generate_automatic_questions(q.keywords, Path("..", "references", "words_for_questions.csv"))
         self.assertEqual(all([q.keywords[0] in quest for quest in auto_q]), True, "missing keywords")
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -8,6 +8,7 @@ from http.client import HTTPSConnection
 from base64 import b64encode
 from json import loads
 from json import dumps
+import keyring
 
 class RestClient:
     domain = "api.dataforseo.com"
@@ -40,6 +41,12 @@ class RestClient:
         return self.request(path, 'POST', data_str)
 
 # post - create request
+def get_credentials(service_name = "dataforSeo", uname = "matteo.jriva@gmail.com"):
+    """gets api credentials using keyring
+    returns a list [user name, password]"""
+    pw = keyring.get_password(service_name, uname)
+    return [uname, pw]
+
 
 def create_request(credentials, str_list, **kwargs) -> dict:
     """function to create request dictionary for SERP API
@@ -53,6 +60,7 @@ def create_request(credentials, str_list, **kwargs) -> dict:
 
     Returns dictionary for call
      """
+    credentials = get_credentials()
     client = RestClient(credentials[0], credentials[1])
     post_data = dict()
 
@@ -72,36 +80,64 @@ def create_request(credentials, str_list, **kwargs) -> dict:
             location_code=location_code,
             keyword=_st
         )
-    return post_data
+    return client, post_data
 
 
 # get - get response
-# TODO: use code below to create function that outputs results
-response = client.post("/v3/serp/google/organic/task_post", post_data)
-if response['status_code'] == 20000:
-    results = []
-    for task in response['tasks']:
-        print(task.keys())
+# TODO: use code below to create function that outputs results$
+def get_response(client, post_data, server ="/v3/serp/google/organic/task_post" ) -> dict:
+    """uses a dict to create a request on dataforSeo api and returns the results as json
+    parameters:
+    client : Restclient object created with create_request
+    post_data: dict created with create_request
+    server: server to use for request
 
-        # 3 - another way to get the task results by id
-        # GET /v3/serp/google/organic/task_get/advanced/$id
-        if (task['id']):
-            results.append(client.get("/v3/serp/google/organic/task_get/advanced/" + task['id']))
-    # print(results[0][0])
-    # do something with result
-else:
-    print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
+    returns json style list
+    """
+    response = client.post("/v3/serp/google/organic/task_post", post_data)
+    if response['status_code'] == 20000:
+        results = []
+        for task in response['tasks']:
+            print(task.keys())
+
+            # 3 - another way to get the task results by id
+            # GET /v3/serp/google/organic/task_get/advanced/$id
+            if (task['id']):
+                results.append(client.get("/v3/serp/google/organic/task_get/advanced/" + task['id']))
+        return results
+    else:
+        print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
 
 # extract - extract relevant_data from response
-#TODO finish extracting PPAa
-if response["status_code"] == 20000:
-    for r in response['tasks'][0]['result']:
-        print(r.keys())
-        for r2 in r["items"]:
-            if r2["type"] == "people_also_ask":
-                for r3 in r2['items']:
-                    print(r2['items'])
-            print("\n")
+def extract_results(results, mode):
+    """extract result from json style list returned by get_response:
+    parameters:
+    results:  json style list with results
+    mode: "ppa" for questions, "link" for link of answers
+    returns list of lists
+    """
+    for task in results['tasks']:
+        clean_results=[]
+        for r in task['result']:
+            print(r.keys())
+            if mode == "ppa":
+                for r2 in r["items"]:
+                    if r2["type"] == "people_also_ask":
+                        for r3 in r2['items']:
+                            print(r2['items'])
+                            clean_results.append([r2['items']])
+            if mode == "link":
+                pass
+            return clean_results
     # do something with result
 
-#TODO create tests for this module
+def get_ppa_and_answers(str_list, **kwargs):
+    client, post_data = create_request(str_list)
+    results = get_response(client, post_data, **kwargs)
+    extract_results(results,mode = "ppa")
+
+
+if __name__ == '__main__':
+    # TODO test this module
+
+    str_list = [ "bla" + str(a) for a in range(10) ]
