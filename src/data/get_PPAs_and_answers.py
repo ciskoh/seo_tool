@@ -126,7 +126,7 @@ def download_results(client, response, **kwargs) -> list:
                 for n in range(100):
                     temp_res = client.get(get_server + task['id'])
                     if temp_res['tasks'][0]['result']:
-                        print(f"downloaded results for question {n}")
+                        print(f"downloaded results for a question")
                         results.append(temp_res['tasks'][0])
                         break
                     else:
@@ -159,7 +159,7 @@ def extract_results(results, mode):
     # do something with result
 
 # Main function
-def get_ppa_and_answers(str_list, **kwargs):
+def main(str_list, **kwargs):
     print(f" collecting results for {len(str_list)} questions")
     # get results from REST API
     # request data from api & download results
@@ -178,11 +178,11 @@ def get_ppa_and_answers(str_list, **kwargs):
 
     for k in clean_results:
         print(f"downloaded {k}s for {len(clean_results[k])} questions")
-    return
+    return clean_results
 
 
 if __name__ == '__main__':
     # TODO test this module
 
     str_list = ["What is a damselfish?"] * 3
-    get_ppa_and_answers(str_list)
+    main(str_list)
