@@ -78,7 +78,7 @@ def create_request(str_list, **kwargs):
         post_data[len(post_data)] = dict(
             language_code=language_code,
             location_code=location_code,
-            keyword=st_
+            keyword=st_ if isinstance(st_, str) else str(st_)
         )
     return client, post_data
 

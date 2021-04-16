@@ -13,7 +13,7 @@ class Test_q_data(unittest.TestCase):
         print("\n testing with a question")
         q = Question("What is a damselfish?")
         self.assertEqual(len(q.keywords),2, "should be 2!")
-        self.assertEqual(len(q.related_questions), 1, "there should be one question!")
+
 
     def test_q_init_with_kw(self):
         print("\n testing with kws!")

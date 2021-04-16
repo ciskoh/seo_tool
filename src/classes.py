@@ -6,29 +6,40 @@ import uuid
 
 class Question:
     """Class that holds Questions.
-     related_questions is a list of other question objects
+     parent_questions is a list of other question objects
      Answers include objects of type Answer only for the main question"""
     unique_id: str = None
     main_question = None
     keywords: list = None
-    related_questions: set = {}
+    parent_questions: set = set([])
     answers: list = None
     is_user_question: bool = False
 
-    def __init__(self, main_question, is_user_question=False):
-        """initialises object and detects if main_question is question or list of keywords"""
-        self.main_question = main_question
+    # TODO: maybe implement "type" attribute to distinguish between user, ppa and automatically generated?
+
+    def __init__(self, main_question, is_user_question=False, parent_question_id=None):
+        """initialises object and detects if main_question is question or list of keywords
+        Parameters:
+            main_question : string of current question
+        Optional parameters:
+            is_user_question: bool if is user input
+            parent_question_id: str or Question object"""
+        self.main_question = str(main_question)
         self.unique_id = str(self.create_unique_id())
         if len(self.main_question.split(" ")) > 2 and ("?" in self.main_question):
             print("you entered a question!")
             self.keywords = self.get_keywords_from_question(self.main_question)
-            # self.related_questions.append(main_question)
+            # self.parent_questions.append(main_question)
         else:
             print("you entered keywords!")
             self.main_question = re.sub("[\W]", ",", self.main_question)
             self.keywords = [k for k in self.main_question.split(",") if len(k) > 0]
         if is_user_question:
             self.is_user_question = True
+        if parent_question_id:
+            id = parent_question_id if isinstance(parent_question_id, str) else parent_question_id.unique_id
+            self.parent_questions.add(parent_question_id)
+
 
     def get_keywords_from_question(self, main_question):
         """ basic keyword retrieval from question
@@ -42,6 +53,10 @@ class Question:
         unique_id = uuid.uuid4()
         return unique_id
 
+    def __str__(self):
+        return self.main_question
+
+
 class Answer:
     """class containing answer to a question and related metric"""
     main_question_id: str = None
@@ -54,12 +69,16 @@ class Answer:
         self.main_question_id = q.unique_id
         self.link = link
 
+    def __str__(self):
+        return self.link
+
+
 class Question_holder:
     main_question_id: str = None
-    questions : list = []
-    answers : list = []
+    questions: list = []
+    answers: list = []
 
-    def __init__(self,q_list):
+    def __init__(self, q_list):
         """initializes """
         for q in q_list:
             # get user question id

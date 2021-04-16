@@ -5,7 +5,7 @@ from src import Question
 
 def get_question():
     user_input = input("Enter question or keywords?")
-    q = Question(user_input)
+    q = Question(user_input, True)
     return q
 
 if __name__ == '__main__':
