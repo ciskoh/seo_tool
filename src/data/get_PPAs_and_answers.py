@@ -82,6 +82,7 @@ def create_request(str_list, **kwargs):
         )
     return client, post_data
 
+
 def send_request(client, post_data, **kwargs):
     """uses a dict to create a request on dataforSeo api
     parameters:
@@ -93,14 +94,13 @@ def send_request(client, post_data, **kwargs):
 
     returns json style list"""
     # set optional arguments
-    server = kwargs.get("server", "/v3/serp/google/organic/")
-    post_server = server + "task_post"
-    get_server = server + "task_get/advanced/"
-    response = client.post(post_server, post_data)
+    server = kwargs.get("server", "/v3/serp/google/organic/task_post")
+    response = client.post(server, post_data)
     return response
 
+
 # get - get response
-# TODO: use code below to create function that outputs results$
+# TODO: this function could be reformatted
 def download_results(client, response, **kwargs) -> list:
     """download the results requested with send_request
     returns the results as json style list
@@ -114,25 +114,21 @@ def download_results(client, response, **kwargs) -> list:
     returns json style list
     """
     # set optional arguments
-    server = kwargs.get("server", "/v3/serp/google/organic/")
-    post_server = server + "task_post"
-    get_server = server + "task_get/advanced/"
-
+    server = kwargs.get("server", "/v3/serp/google/organic/task_get/advanced/")
     if response['status_code'] == 20000:
         results = []
-        for task in response['tasks']:
-            if task['id']:
-                # this loop ensure that results are actually collected
-                for n in range(100):
-                    temp_res = client.get(get_server + task['id'])
-                    if temp_res['tasks'][0]['result']:
-                        print(f"downloaded results for a question")
-                        results.append(temp_res['tasks'][0])
-                        break
-                    else:
-                        if n == 0:
-                            print("...this might take a while...")
-                        # time.sleep(0.5)
+        for res in response['tasks'][0]['result']:
+            # this loop ensure that results are actually collected
+            for n in range(300):
+                temp_res = client.get(server + res['id'])
+                if temp_res['tasks'][0]['result']:
+                    # print(f"downloaded results for a question")
+                    results.append(temp_res['tasks'][0]['result'][0])
+                    break
+                else:
+                    if n == 0:
+                        print("...this might take a while...")
+                    # time.sleep(0.5)
         return results
     else:
         print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
@@ -146,29 +142,36 @@ def extract_results(results, mode):
     mode: "ppa" for questions, "organic" for link of answers
     returns list of lists
     """
-    clean_results = []
+    clean_results = {}
     for r in results:
         if mode == "ppa":
-            for n, item in enumerate(r['result'][0]['items']):
+            for n, item in enumerate(r['items']):
                 if item["type"] == "people_also_ask":
                     ppas = [i['title'] for i in item['items']]
-                    clean_results.append(ppas)
+                    clean_results[r['keyword']] = ppas
         if mode == "link":
-            clean_results.append([item['url'] for item in r['result'][0]['items'] if item['type']=='organic'])
+            links = [item['url'] for item in r['items'] if item['type'] == 'organic']
+            clean_results[r['keyword']] = links
     return clean_results
     # do something with result
 
+
 # Main function
 def main(str_list, **kwargs):
-    print(f" collecting results for {len(str_list)} questions")
-    # get results from REST API
-    # request data from api & download results
     client, post_data = create_request(str_list)
-    response = send_request(client, post_data)
-    results = download_results(client, response)
-    # todo insert error here in case results do not appear
-
-    #extract relevant results
+    _ = send_request(client, post_data)
+    results = []
+    # this cycle downloads the task once they are ready
+    while len(results) < len(str_list):
+        print("Downloading results...")
+        response = client.get("/v3/serp/google/organic/tasks_ready")
+        results += download_results(client, response)
+        if len(results) < len(str_list):
+            print("...this might take a while...")
+            time.sleep(15)
+        else:
+            print("all queries downloaded!")
+    # extract relevant results
     clean_results = {}
     if not kwargs.get("mode"):
         clean_results['ppa'] = extract_results(results, mode="ppa")
@@ -184,5 +187,6 @@ def main(str_list, **kwargs):
 if __name__ == '__main__':
     # TODO test this module
 
-    str_list = ["What is a damselfish?"] * 3
-    main(str_list)
+    str_list = ["What is a damselfish?", "where is a damselfish?", "how is a damselfish?"]
+    clean_res = main(str_list)
+    print(clean_res)

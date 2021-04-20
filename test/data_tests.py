@@ -32,7 +32,8 @@ class Test_q_data(unittest.TestCase):
         print("testing ppa retrieval")
         q_list=["What is a damselfish?", "What is clownfish?", "What is a sea sponge?" ]
         results = get_ppas_and_answers(q_list, mode="ppa")
-        self.assertIsNotNone(results)
+        pass
+        self.assertCountEqual(q_list, results["ppa"].keys())
 if __name__ == '__main__':
     unittest.main()
 
