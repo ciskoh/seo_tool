@@ -90,3 +90,40 @@ class Question_holder:
                 self.questions.append(q)
             else:
                 raise TypeError("object q is not of type Question")
+
+
+    def ingest_new_questions(self, new_questions):
+        """function to import new questions as Question objects
+        parameters:
+        new_questions: list or dic of questions, if list the parent question will be the main
+                        question of the Question_holder, if new_questions is a dic the key will be used to match with
+                        existing parent questions """
+        if isinstance(new_questions, list):
+            parent_q_id = self.main_question_id
+            for new_q in new_questions:
+                self.safely_ingest_single_question(new_q, parent_q_id)
+        elif isinstance(new_questions, dict):
+            for k in new_questions:
+                parent_q_id = [q.unique_id for q in self.questions if str(q) == k ]
+                if not parent_q_id:
+                    raise LookupError("parent question not found!")
+                if isinstance(new_questions[k],list):
+                    for new_q in new_questions[k]:
+                        self.safely_ingest_single_question(new_q, parent_q_id[0])
+
+    def set_question(self, new_q, parent_q_id):
+        """function to ingest question checking to avoid repetition
+        and consolidating parent questions"""
+        if new_q in [str(q) for q in self.questions]:
+            existing_q = [q for q in self.questions if str(q) == new_q][0]
+            existing_q.parent_questions.add(parent_q_id)
+        else:
+            self.questions.append(Question(new_q, False, parent_q_id))
+
+    def __str__(self):
+        if self.questions:
+            print("Questions: ")
+            print([str(q) for q in self.questions])
+        if self.answers:
+            print("Answers: ")
+            print([str(a) for a in self.answers])
