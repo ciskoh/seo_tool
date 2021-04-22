@@ -5,8 +5,9 @@ import unittest
 import sys
 from pathlib import Path
 sys.path.append(Path("..", "src"))
-from src.data import Question
+from src import Question, Answer, Question_holder
 from src.data import get_ppas_and_answers
+
 class Test_q_data(unittest.TestCase):
 
     def test_q_init_with_question(self):
@@ -34,6 +35,34 @@ class Test_q_data(unittest.TestCase):
         results = get_ppas_and_answers(q_list, mode="ppa")
         pass
         self.assertCountEqual(q_list, results["ppa"].keys())
+
+class Test_classes(unittest.TestCase):
+
+    def test_question_holder_creation(self):
+        print("testing set method of Question_holder class ")
+        q = Question("What is a damselfish?", True)
+        q2 = Question("What is a clownfish?")
+        query = Question_holder([q, q2])
+        self.assertEqual(query.main_question_id,q.unique_id)
+        del q,q2,query
+        return None
+
+    def test_question_holder_set(self):
+        print("testing set method of Question_holder class ")
+
+        p = Question("What is a prot?", True)
+        p2 = "What is a prit?"
+        p3 = "What is a prut?"
+
+        query2 = Question_holder([p])
+        query2.set_question(p2, p.unique_id)
+        query2.set_question(p3, p.unique_id)
+        query2.set_question(p3, query2.questions[1].unique_id)
+
+        test = query2.questions[-1].parent_questions
+        self.assertEqual(len(query2.questions), 3)
+        self.assertEqual(len(query2.questions[-1].parent_questions), 2)
+
 if __name__ == '__main__':
     unittest.main()
 

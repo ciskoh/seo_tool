@@ -24,6 +24,13 @@ class Question:
         Optional parameters:
             is_user_question: bool if is user input
             parent_question_id: str or Question object"""
+        self.unique_id: str = None
+        self.main_question = None
+        self.keywords: list = None
+        self.parent_questions: set = set([])
+        self.answers: list = None
+        self.is_user_question: bool = False
+
         self.main_question = str(main_question)
         self.unique_id = str(self.create_unique_id())
         if len(self.main_question.split(" ")) > 2 and ("?" in self.main_question):
@@ -66,6 +73,11 @@ class Answer:
     similarity_metrics: float = None
 
     def __init__(self, q, link):
+        self.main_question_id: str = None
+        self.link: str = None
+        self.ranking_metrics: float = None
+        self.quality_metrics: float = None
+        self.similarity_metrics: float = None
         self.main_question_id = q.unique_id
         self.link = link
 
@@ -74,18 +86,19 @@ class Answer:
 
 
 class Question_holder:
-    main_question_id: str = None
-    questions: list = []
-    answers: list = []
+
 
     def __init__(self, q_list):
-        """initializes """
+        """initializes Question_holder """
+        self.main_question_id: str = None
+        self.questions: list = []
+        self.answers: list = []
+
         for q in q_list:
             # get user question id
-            if not self.main_question_id:
-                if q.is_user_question:
-                    self.main_question_id = q.unique_id
-
+            if q.is_user_question:
+                self.main_question_id = q.unique_id
+            self.questions
             if isinstance(q, Question):
                 self.questions.append(q)
             else:
@@ -101,7 +114,7 @@ class Question_holder:
         if isinstance(new_questions, list):
             parent_q_id = self.main_question_id
             for new_q in new_questions:
-                self.safely_ingest_single_question(new_q, parent_q_id)
+                self.set_question(new_q, parent_q_id)
         elif isinstance(new_questions, dict):
             for k in new_questions:
                 parent_q_id = [q.unique_id for q in self.questions if str(q) == k ]
@@ -109,11 +122,21 @@ class Question_holder:
                     raise LookupError("parent question not found!")
                 if isinstance(new_questions[k],list):
                     for new_q in new_questions[k]:
-                        self.safely_ingest_single_question(new_q, parent_q_id[0])
+                        self.set_question(new_q, parent_q_id[0])
 
-    def set_question(self, new_q, parent_q_id):
-        """function to ingest question checking to avoid repetition
-        and consolidating parent questions"""
+    def set_question(self, new_q, parent_q_id=None):
+        """function to set questions while checking to avoid repetition
+        and consolidating parent questions
+        parameters:
+        new_q: string
+        parent_q_id: str with unique_id DISCARDED
+        """
+        # set params
+        if isinstance(new_q, Question):
+            raise NotImplementedError("new_q must be a string for now!")
+
+        parent_q_id = parent_q_id if parent_q_id else self.main_question_id
+
         if new_q in [str(q) for q in self.questions]:
             existing_q = [q for q in self.questions if str(q) == new_q][0]
             existing_q.parent_questions.add(parent_q_id)
@@ -122,8 +145,9 @@ class Question_holder:
 
     def __str__(self):
         if self.questions:
-            print("Questions: ")
-            print([str(q) for q in self.questions])
+            fin_str = "Questions: "
+            fin_str += "; ".join([str(q) for q in self.questions])
         if self.answers:
-            print("Answers: ")
-            print([str(a) for a in self.answers])
+            fin_str += "\n Answers: "
+            fin_str += "; ".join([str(a) for a in self.answers])
+        return fin_str
