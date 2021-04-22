@@ -18,21 +18,19 @@ def create_child_question_series(str_q_list, parent_q):
     return final_q_list
 
 # Main script to run the no_answer_tool
-def main():
+def main(first_q=None):
     # step 1 get input from user
     q = get_question()
     query = Question_holder([q])
     # step 2 generate automatic questions
     gen_qs = generate_automatic_questions(q.keywords, Path("references", "words_for_questions.csv"))
     # transform gen_qs into a list of Question objects
-    new_q_list= create_child_question_series(gen_qs,q)
-    query.questions += new_q_list
-    print(q.parent_questions)
+    query.ingest_new_questions(gen_qs)
+    print(query.questions)
     # step 3 get people also ask questions
     ppas = get_ppas_and_answers(query.questions, mode="ppa")['ppa']
-    print(ppas)
-    ppas_flattened =set([q for sublist in ppas for q in sublist])
-    q.parent_questions +=ppas_flattened
+    query.ingest_new_questions(ppas)
+
     # step4 get answers for all questions
     answers = get_ppas_and_answers(q.parent_questions, mode="link")['link']
     for x,a in zip(q.parent_questions, answers):
@@ -41,4 +39,18 @@ def main():
         print("\n".join(a[:20]))
 
 if __name__ == '__main__':
+    # import json
+    # temp_path = "data/raw/clean_results.json"
+    # with open(temp_path, "r") as file:
+    #     clean_res = json.load(file)
+    # q=Question("what is a damselfish?", True)
+    # query = Question_holder([q])
+    # # step 2 generate automatic questions
+    # gen_qs = generate_automatic_questions(q.keywords, Path("references", "words_for_questions.csv"))
+    # # transform gen_qs into a list of Question objects
+    # query.ingest_new_questions({str(q):gen_qs})
+    # print(str(query))
+    # ppas=clean_res["ppa"]
+    # query.ingest_new_questions(ppas)
+    # print(ppas)
     main()

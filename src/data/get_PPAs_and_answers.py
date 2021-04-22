@@ -185,8 +185,13 @@ def main(str_list, **kwargs):
 
 
 if __name__ == '__main__':
+    import json
+    import os
     # TODO test this module
 
     str_list = ["What is a damselfish?", "where is a damselfish?", "how is a damselfish?"]
     clean_res = main(str_list)
+    if not os.path.exists("../../data/raw/clean_results.json"):
+        with open("../../data/raw/clean_results.json", "w") as file:
+            json.dump(clean_res, file)
     print(clean_res)
