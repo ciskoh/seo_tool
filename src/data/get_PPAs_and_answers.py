@@ -78,7 +78,8 @@ def create_request(str_list, **kwargs):
         post_data[len(post_data)] = dict(
             language_code=language_code,
             location_code=location_code,
-            keyword=st_ if isinstance(st_, str) else str(st_)
+            keyword=st_ if isinstance(st_, str) else str(st_),
+            priority=kwargs.get("priority",1)
         )
     return client, post_data
 
@@ -121,7 +122,7 @@ def check_api_connection(post_data, response) -> list:
     return id_list
 
 
-# TODO: this function could be reformatted
+# TODO: expose sleep time and test computation time with different sleep times
 def download_results(client, response_ready, id_list, **kwargs) -> list:
     """download the results requested with send_request
     returns the results as json style list
@@ -141,8 +142,8 @@ def download_results(client, response_ready, id_list, **kwargs) -> list:
         results = []
         # this loop ensure that results are collected when they are ready
         count = 0
-        while len(id_list) > 0:
-            if count == 1:
+        while id_list and (count < 1000) :
+            if count >= 1:
                 print(f"...this might take a while(x {count})... ")
                 print(f"...still {len(id_list)} items to go! ")
             count += 1
@@ -152,8 +153,9 @@ def download_results(client, response_ready, id_list, **kwargs) -> list:
                     results.append(temp_res['tasks'][0]['result'][0])
                     id_list.remove(id)
                     break
-
-            time.sleep(1)
+            time.sleep(0.2)
+            if (count == 999) and id_list:
+                raise ConnectionError("could not load all results!!!")
         return results
     else:
         print("error. Code: %d Message: %s" % (response_ready["status_code"], response_ready["status_message"]))
@@ -183,7 +185,7 @@ def extract_results(results, mode):
 
 # Main function
 def main(str_list, **kwargs):
-    client, post_data = create_request(str_list)
+    client, post_data = create_request(str_list, priority=2)
     response = send_request(client, post_data)
     id_list = check_api_connection(post_data, response)
     results = []
