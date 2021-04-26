@@ -59,9 +59,89 @@ class Test_classes(unittest.TestCase):
         query2.set_question(p3, p.unique_id)
         query2.set_question(p3, query2.questions[1].unique_id)
 
-        test = query2.questions[-1].parent_questions
         self.assertEqual(len(query2.questions), 3)
         self.assertEqual(len(query2.questions[-1].parent_questions), 2)
+
+    def test_query_list_output(self):
+        print("testing list output")
+        p = Question("What is a prot?", True)
+        p2 = "What is a prit?"
+        p3 = "What is a prut?"
+
+        query3 = Question_holder([p])
+        query3.set_question(p2, p.unique_id)
+        query3.set_question(p3, p.unique_id)
+        query3.set_question(p3, query3.questions[1].unique_id)
+
+        output = query3.to_list('q',True)
+        print(output)
+        self.assertEqual(len(output), 2)
+        self.assertEqual(len(output[0]), len(output[1]) )
+        self.assertEqual(len(output[0]), 3 )
+
+    def test_query_pandas_output(self):
+        print("testing pandas output")
+        p = Question("What is a prot?", True)
+        p2 = "What is a prit?"
+        p3 = "What is a prut?"
+        a2 = "www.blabla.com"
+        a3 = "www.blibli.com"
+
+        query3 = Question_holder([p])
+        query3.set_question(p2, p.unique_id)
+        query3.set_question(p3, p.unique_id)
+        query3.set_question(p3, query3.questions[1].unique_id)
+        query3.set_answer(a2, p.unique_id)
+        query3.set_answer(a3, query3.questions[-1].unique_id)
+
+        output = query3.to_pandas()
+        print(output)
+        self.assertEqual(len(output), 2)
+        self.assertEqual(output.shape(), [2,2])
+
+
+    def test_question_holder_remove_unwanted_questions(self):
+        print("testing remove_unwanted_questions of Question_holder class ")
+
+        print("testing list output")
+        p = Question("What is a prot?", True)
+        p2 = "What is a prit?"
+        p3 = "What is a prut?"
+
+        query3 = Question_holder([p])
+        query3.set_question(p2, p.unique_id)
+        query3.set_question(p3, p.unique_id)
+        query3.set_question(p3, query3.questions[1].unique_id)
+        query3.remove_unwanted_questions([p2,p3], "k")
+
+        self.assertEqual(len(query3.questions), 2)
+        self.assertEqual(str(query3.questions[-1]), p3)
+
+    def test_question_holder_set_answer(self):
+        print("testing set_answer method of Question_holder class ")
+
+        p = Question("What is a prot?", True)
+        query4 = Question_holder([p])
+        a2 = "www.blabla.com"
+        a3 = "www.blibli.com"
+
+        query4.set_answer(a2, p.unique_id)
+        query4.set_answer(a3, p.unique_id)
+        query4.set_answer(a3, "blabla")
+
+        self.assertEqual(len(query4.answers), 2)
+        self.assertEqual(len(query4.answers[-1].parent_questions), 2)
+
+    def test_question_holder_ingest_answers(self):
+        print("testing ingest answers method of Question_holder class ")
+
+        p = Question("What is a prot?", True)
+        query4 = Question_holder([p])
+        a2 = "www.blabla.com"
+        a3 = "www.blibli.com"
+        query4.ingest_new_answers({str(p): [a2,a3]} )
+        self.assertEqual(len(query4.answers), 2)
+        self.assertEqual(len(query4.answers[-1].parent_questions), 1)
 
 if __name__ == '__main__':
     unittest.main()

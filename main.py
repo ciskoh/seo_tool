@@ -11,7 +11,10 @@ from pathlib import Path
 
 
 # Main script to run the no_answer_tool
-def main(first_q=None):
+def main_get_questions(first_q=None):
+    """main function retrieving automatically generated question and
+    Google's PPA questions based on initial user input
+    """
     # step 1 get input from user
     if not first_q:
         q = get_question()
@@ -31,10 +34,20 @@ def main(first_q=None):
     # step 3 get people also ask questions
     ppas = get_ppas_and_answers(query.questions, mode="ppa")['ppa']
     query.ingest_new_questions(ppas)
+    return query
 
+def main_get_answers(query):
     # step4 get answers for all questions
-    answers = get_ppas_and_answers(query.questions, mode="link")['link']
-    print(query)
+    if not isinstance(query, Question_holder):
+        print("main "+str(type(query)))
+        raise ValueError(f"query object not recognized!")
+    if not len(query.questions) >= 2:
+        raise ValueError("no questions found in query")
+
+    new_answers = get_ppas_and_answers(query.questions, mode="link")['link']
+    query.ingest_new_answers(new_answers)
+
+    return query
 
 
 if __name__ == '__main__':
@@ -52,4 +65,5 @@ if __name__ == '__main__':
     # ppas=clean_res["ppa"]
     # query.ingest_new_questions(ppas)
     # print(ppas)
-    main("what is a damselfish?")
+    # query = main_get_questions("what is a damselfish?")
+    pass
