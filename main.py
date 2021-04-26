@@ -26,17 +26,14 @@ def main(first_q=None):
     gen_qs = generate_automatic_questions(q.keywords, Path("references", "words_for_questions.csv"))
     # transform gen_qs into a list of Question objects
     query.ingest_new_questions(gen_qs)
-    print(query.questions)
+    print(query)
     # step 3 get people also ask questions
     ppas = get_ppas_and_answers(query.questions, mode="ppa")['ppa']
     query.ingest_new_questions(ppas)
 
     # step4 get answers for all questions
-    answers = get_ppas_and_answers(q.parent_questions, mode="link")['link']
-    for x,a in zip(q.parent_questions, answers):
-        print("\n")
-        print(x, ":")
-        print("\n".join(a[:20]))
+    answers = get_ppas_and_answers(query.questions, mode="link")['link']
+    print(query)
 
 if __name__ == '__main__':
     # import json

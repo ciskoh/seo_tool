@@ -27,8 +27,8 @@ class RestClient:
             ).decode("ascii")
             headers = {'Authorization': 'Basic %s' % base64_bytes}
             connection.request(method, path, headers=headers, body=data)
-            response = connection.getresponse()
-            return loads(response.read().decode())
+            response_ready = connection.getresponse()
+            return loads(response_ready.read().decode())
         finally:
             connection.close()
 
@@ -95,18 +95,40 @@ def send_request(client, post_data, **kwargs):
     returns json style list"""
     # set optional arguments
     server = kwargs.get("server", "/v3/serp/google/organic/task_post")
-    response = client.post(server, post_data)
-    return response
+    response_ready = client.post(server, post_data)
+    return response_ready
 
 
-# get - get response
+def check_api_connection(post_data, response) -> list:
+    """ checks connection with api by verifying error codes and number of tasks between
+    post_data/requests and response
+    parameters:
+    post_data: dictionary with requests
+    response: json response form server
+
+    Returns list of tasks id to be downloaded
+    """
+    # check status code
+    if response['status_code'] != 20000:
+        raise ConnectionError(f"Status code is not ok: {response['status_message']}")
+    # check
+    id_list = []
+    for a, b in zip(post_data.values(), response['tasks']):
+        if a['keyword'] != b['data']['keyword']:
+            raise ConnectionError("task is missing")
+        else:
+            id_list.append(b['id'])
+    return id_list
+
+
 # TODO: this function could be reformatted
-def download_results(client, response, **kwargs) -> list:
+def download_results(client, response_ready, id_list, **kwargs) -> list:
     """download the results requested with send_request
     returns the results as json style list
     parameters:
     client : Restclient object created with create_request
     post_data: dict created with create_request
+    id_list: list of id from current request
 
     Optional parameters:
     server: server to use for request
@@ -115,26 +137,29 @@ def download_results(client, response, **kwargs) -> list:
     """
     # set optional arguments
     server = kwargs.get("server", "/v3/serp/google/organic/task_get/advanced/")
-    if response['status_code'] == 20000:
+    if response_ready['status_code'] == 20000:
         results = []
-        for res in response['tasks'][0]['result']:
-            # this loop ensure that results are actually collected
-            for n in range(300):
-                temp_res = client.get(server + res['id'])
+        # this loop ensure that results are collected when they are ready
+        count=0
+        while len(id_list)>0:
+            if count
+            print("...this might take a while...")
+            count+=
+            for id in id_list:
+                temp_res = client.get(server + id)
                 if temp_res['tasks'][0]['result']:
-                    # print(f"downloaded results for a question")
                     results.append(temp_res['tasks'][0]['result'][0])
+                    id_list.remove(id)
                     break
                 else:
-                    if n == 0:
-                        print("...this might take a while...")
-                    # time.sleep(0.5)
+                    print("...this might take a while...")
+            time.sleep(5)
         return results
     else:
-        print("error. Code: %d Message: %s" % (response["status_code"], response["status_message"]))
+        print("error. Code: %d Message: %s" % (response_ready["status_code"], response_ready["status_message"]))
 
 
-# extract - extract relevant_data from response
+# extract - extract relevant_data from response_ready
 def extract_results(results, mode):
     """extract result from json style list returned by download_results:
     parameters:
@@ -159,13 +184,14 @@ def extract_results(results, mode):
 # Main function
 def main(str_list, **kwargs):
     client, post_data = create_request(str_list)
-    _ = send_request(client, post_data)
+    response = send_request(client, post_data)
+    id_list = check_api_connection(post_data, response)
     results = []
     # this cycle downloads the task once they are ready
     while len(results) < len(str_list):
         print("Downloading results...")
-        response = client.get("/v3/serp/google/organic/tasks_ready")
-        results += download_results(client, response)
+        response_ready = client.get("/v3/serp/google/organic/tasks_ready")
+        results += download_results(client, response_ready, id_list)
         if len(results) < len(str_list):
             print("...this might take a while...")
             time.sleep(15)
@@ -187,7 +213,6 @@ def main(str_list, **kwargs):
 if __name__ == '__main__':
     import json
     import os
-    # TODO test this module
 
     str_list = ["What is a damselfish?", "where is a damselfish?", "how is a damselfish?"]
     clean_res = main(str_list)
