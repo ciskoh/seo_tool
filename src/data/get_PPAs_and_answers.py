@@ -140,20 +140,20 @@ def download_results(client, response_ready, id_list, **kwargs) -> list:
     if response_ready['status_code'] == 20000:
         results = []
         # this loop ensure that results are collected when they are ready
-        count=0
-        while len(id_list)>0:
-            if count
-            print("...this might take a while...")
-            count+=
+        count = 0
+        while len(id_list) > 0:
+            if count == 1:
+                print(f"...this might take a while(x {count})... ")
+                print(f"...still {len(id_list)} items to go! ")
+            count += 1
             for id in id_list:
                 temp_res = client.get(server + id)
                 if temp_res['tasks'][0]['result']:
                     results.append(temp_res['tasks'][0]['result'][0])
                     id_list.remove(id)
                     break
-                else:
-                    print("...this might take a while...")
-            time.sleep(5)
+
+            time.sleep(1)
         return results
     else:
         print("error. Code: %d Message: %s" % (response_ready["status_code"], response_ready["status_message"]))
