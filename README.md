@@ -54,6 +54,7 @@ Project Organization
     │   │
     │   ├── data           <- Scripts to download or generate data
     │   │   └── get_question.py _module that deals with the user providing question or keywords_
+            └── generate_automatic_questions _module that deals with the user providing question or keywords_
     │   │
     │   ├── features       <- Scripts to turn raw data into features for modeling
     │   │   └── build_features.py

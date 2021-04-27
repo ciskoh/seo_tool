@@ -46,7 +46,15 @@ def streamlit_get_answers(query, keep_qs):
     print(str(query))
     return main_get_answers(query)
 
-
+def get_table_download_link(df)->str:
+    """Generates a link allowing the data in a given panda dataframe to be downloaded
+    in:  dataframe
+    out: href string
+    """
+    csv = df.to_csv(index=False)
+    #b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{csv}">Download csv file</a>'
+    return href
 def streamlit_main():
     """main function to create a streamlit GUI"""
     flow_control = create_flow_control(4)
