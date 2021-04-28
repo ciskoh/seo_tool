@@ -64,7 +64,9 @@ def create_request(str_list, **kwargs):
     Returns dictionary for call
      """
     # set optional arguments
-    credentials = kwargs.get("credentials", get_credentials())
+    if not kwargs.get("credentials"):
+        raise FileNotFoundError("missing dataForSEO credentials")
+    credentials = kwargs.get("credentials")
     language_code = kwargs.get("language_code", "en")
     location_code = kwargs.get("location_code", 2840)
     # check str_list
