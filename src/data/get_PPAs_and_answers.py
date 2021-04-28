@@ -185,6 +185,7 @@ def extract_results(results, mode):
 
 # Main function
 def main(str_list, **kwargs):
+    print("get_qu:", kwargs.get("credentials"))
     client, post_data = create_request(str_list, priority=2, **kwargs)
     response = send_request(client, post_data)
     id_list = check_api_connection(post_data, response)

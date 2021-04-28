@@ -28,7 +28,6 @@ def main_get_questions(first_q=None, **kwargs):
     gen_qs = generate_automatic_questions(q.keywords, Path("references", "words_for_questions.csv"))
     # transform gen_qs into a list of Question objects
     query.ingest_new_questions(gen_qs)
-    print(query)
     # step 3 get people also ask questions
     ppas = get_ppas_and_answers(query.questions, mode="ppa", **kwargs)['ppa']
     query.ingest_new_questions(ppas)
