@@ -33,7 +33,7 @@ def main_get_questions(first_q=None, **kwargs):
     query.ingest_new_questions(ppas)
     return query
 
-def main_get_answers(query):
+def main_get_answers(query, **kwargs):
     # step4 get answers for all questions
     if not isinstance(query, Question_holder):
         print("main "+str(type(query)))
@@ -41,7 +41,7 @@ def main_get_answers(query):
     if not len(query.questions) >= 2:
         raise ValueError("no questions found in query")
 
-    new_answers = get_ppas_and_answers(query.questions, mode="link")['link']
+    new_answers = get_ppas_and_answers(query.questions, mode="link", **kwargs)['link']
     query.ingest_new_answers(new_answers)
 
     return query

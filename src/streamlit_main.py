@@ -107,7 +107,7 @@ def streamlit_main():
     # download answers
     if flow_control[3]:
         st.warning("Downloading most relevant answers from Google.\n This can take up to 1 minute")
-        query = streamlit_get_answers(query, keep_qs)
+        query = streamlit_get_answers(query, keep_qs, credentials=credentials)
         if query:
             flow_control[4] = True
 
