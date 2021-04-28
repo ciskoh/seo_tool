@@ -35,7 +35,7 @@ def streamlit_get_ppa(user_input, **kwargs):
     return query
 
 
-# TODO: remove unwanted questons does not behave properly
+# TODO: remove unwanted questions does not behave properly
 @st.cache(allow_output_mutation=True)
 def streamlit_get_answers(query, keep_qs, **kwargs):
     """get answers only for selected questions
@@ -64,7 +64,7 @@ def streamlit_main():
     """main function to create a streamlit GUI"""
     flow_control = create_flow_control(5)
     if st.secrets["credentials"]:
-        credentials = st.secrets["credentials"]
+        credentials = [st.secrets["uname"], st.secrets["pw"]
     else:
         credentials = None
 
