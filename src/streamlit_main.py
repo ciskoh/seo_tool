@@ -64,6 +64,7 @@ def streamlit_main():
     """main function to create a streamlit GUI"""
     flow_control = create_flow_control(5)
     credentials=[st.secrets['uname'], st.secrets['pw']]
+    st.write(credentials)
     if st.button("Press to Start") and not any(flow_control):
         flow_control[0] = True
         st.text(str(flow_control[0]))
