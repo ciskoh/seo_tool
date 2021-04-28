@@ -63,10 +63,7 @@ def get_table_download_link(df) -> str:
 def streamlit_main():
     """main function to create a streamlit GUI"""
     flow_control = create_flow_control(5)
-    if st.secrets["credentials"]:
-        credentials = st.secrets["credentials"]
-    else:
-        credentials = None
+    credentials=[st.secrets['uname'], st.secrets['pw']]
 
     if st.button("Press to Start") and not any(flow_control):
         flow_control[0] = True
