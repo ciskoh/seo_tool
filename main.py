@@ -11,14 +11,12 @@ from pathlib import Path
 
 
 # Main script to run the no_answer_tool
-def main_get_questions(first_q=None):
+def main_get_questions(first_q=None, **kwargs):
     """main function retrieving automatically generated question and
     Google's PPA questions based on initial user input
     """
     # step 1 get input from user
-    if not first_q:
-        q = get_question()
-    elif isinstance(first_q, str):
+    if isinstance(first_q, str):
         q = Question(first_q, True, None)
     elif isinstance(first_q, Question):
         q = first_q
@@ -32,7 +30,7 @@ def main_get_questions(first_q=None):
     query.ingest_new_questions(gen_qs)
     print(query)
     # step 3 get people also ask questions
-    ppas = get_ppas_and_answers(query.questions, mode="ppa")['ppa']
+    ppas = get_ppas_and_answers(query.questions, mode="ppa", **kwargs)['ppa']
     query.ingest_new_questions(ppas)
     return query
 
