@@ -4,6 +4,7 @@ from main import main_get_questions, main_get_answers
 from src import Question_holder
 import streamlit as st
 import time
+import base64
 
 st.title(" no answer tool v 0.1 alpha")
 """
@@ -52,12 +53,13 @@ def get_table_download_link(df)->str:
     out: href string
     """
     csv = df.to_csv(index=False)
-    #b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    href = f'<a href="data:file/csv;base64,{csv}">Download csv file</a>'
+    b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
+    href = f'<a href="data:file/csv;base64,{b64}">Download csv file</a>'
     return href
+
 def streamlit_main():
     """main function to create a streamlit GUI"""
-    flow_control = create_flow_control(4)
+    flow_control = create_flow_control(5)
 
     if st.button("Press to Start") and not any(flow_control):
         flow_control[0] = True
@@ -72,7 +74,7 @@ def streamlit_main():
         * Keywords can be any number of words, divided by a space    
         """)
         user_input = st.text_input("Enter a question or keywords", "")
-        if st.button("Confirm"):
+        if st.button("Confirm") or user_input:
             flow_control[1] = True
 
     if flow_control[1]:
@@ -101,12 +103,15 @@ def streamlit_main():
 
     if flow_control[3]:
         st.warning("Downloading most relevant answers from Google.\n This can take up to 1 minute")
-
         query = streamlit_get_answers(query, keep_qs)
         if query:
-            st.success("Your data is ready")
-            st.write(str(query))
-            st.write(query.to_pandas())
+            flow_control[4]=True
+
+    if flow_control[4]:
+        st.success("Your data is ready")
+        final_df = query.to_pandas()
+        st.dataframe(final_df) #TODO repair this
+        st.write(get_table_download_link(final_df), unsafe_allow_html=True)
 
 
 if __name__ == '__main__':
