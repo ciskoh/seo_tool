@@ -13,7 +13,6 @@ class Question:
     main_question = None
     keywords: list = None
     parent_questions: set = set([])
-    answers: list = None
     is_user_question: bool = False
 
     # TODO: maybe implement "type" attribute to distinguish between user, ppa and automatically generated?
@@ -29,7 +28,7 @@ class Question:
         self.main_question = None
         self.keywords: list = None
         self.parent_questions: set = set([])
-        self.answers: list = None
+        self.answers: set = set([])
         self.is_user_question: bool = False
 
         self.main_question = str(main_question)
@@ -60,27 +59,40 @@ class Question:
         unique_id = uuid.uuid4()
         return unique_id
 
+    def set_answer(self, new_a):
+        """function to set questions while checking to avoid repetition
+        and consolidating parent questions
+        parameters:
+        new_a: string
+        parent_q_id: str with unique_id
+        """
+        # set params
+        if isinstance(new_a, Answer):
+            raise NotImplementedError("answer must be a string for now!")
+        if new_a not in [str(a) for a in self.answers]:
+            self.answers.add(Answer(new_a, self.unique_id))
+        else:
+            raise ValueError("Answer already present")
+
     def __str__(self):
         return self.main_question
 
 
 class Answer:
     """class containing answer to a question and related metric"""
-    main_question_id: str = None
+    unique_id: str = None
     link: str = None
-    ranking_metrics: float = None
-    quality_metrics: float = None
-    similarity_metrics: float = None
-
+    metrics = None
+    parent_questions = set([])
     def __init__(self, link, q_id):
-        self.main_question_id: str = None
-        self.link: str = None
-        self.ranking_metrics: float = None
-        self.quality_metrics: float = None
-        self.similarity_metrics: float = None
-        self.main_question_id = q_id
-        self.parent_questions: set = set([self.main_question_id])
-        self.link = link
+        self.unique_id: str = str(self.create_unique_id())
+        self.link: str = link
+        self.parent_questions: set = set([q_id])
+        self.metrics = None
+
+    def create_unique_id(self):
+        unique_id = uuid.uuid4()
+        return unique_id
 
     def __str__(self):
         return self.link
@@ -167,7 +179,7 @@ class Question_holder:
         if q_id:
             got_q = [q for q in self.questions if q.unique_id == q_id]
         if q_str:
-            got_q =  [q for q in self.questions if str(q) == q_str]
+            got_q = [q for q in self.questions if str(q) == q_str]
         if not got_q:
             raise ValueError("Question not found")
         else:
@@ -190,25 +202,6 @@ class Question_holder:
                 if str(q) in q_list:
                     self.questions.remove(q)
 
-    def set_answer(self, new_a, parent_q_id=None):
-        """function to set questions while checking to avoid repetition
-        and consolidating parent questions
-        parameters:
-        new_a: string
-        parent_q_id: str with unique_id DISCARDED
-        """
-        # set params
-        if isinstance(new_a, Answer):
-            raise NotImplementedError("new_a must be a string for now!")
-
-        parent_q_id = parent_q_id if parent_q_id else self.main_question_id
-
-        if new_a in [str(a) for a in self.answers]:
-            existing_a = [a for a in self.answers if str(a) == new_a][0]
-            existing_a.parent_questions.add(parent_q_id)
-        else:
-            self.answers.append(Answer(new_a, False))
-
     def ingest_new_answers(self, new_answers):
 
         if isinstance(new_answers, list):
@@ -217,12 +210,12 @@ class Question_holder:
                 self.set_question(new_q, parent_q_id)
         elif isinstance(new_answers, dict):
             for k in new_answers:
-                parent_q_id = [q.unique_id for q in self.questions if str(q) == k]
-                if not parent_q_id:
-                    raise LookupError("parent question not found!")
+                parent_q = self.get_question(q_str=k)
                 if isinstance(new_answers[k], list):
                     for new_a in new_answers[k]:
-                        self.set_answer(new_a, parent_q_id[0])
+                        parent_q.set_answer(new_a)
+                else:
+                    parent_q.set_answer(new_answers[k])
 
     def to_list(self, mode=None, id=False) -> list:
         """exports all questions and /or answers as list
@@ -245,21 +238,42 @@ class Question_holder:
             return my_as
         else:
             raise ValueError("mode parameter must be 'q' or 'a'!!")
-    #TODO: add more columns
-    def to_pandas(self):
-        answer_list=self.answers
-        question_list=self.questions
-        final_dict={}
-        fin_df = pd.DataFrame(columns=["parent_question", "link"])
-        for n,a in enumerate(answer_list):
-            try:
-                parent_q = str(self.get_question(q_id=a.parent_questions))
-            except ValueError:
-                parent_q = "Question not found!!!"
 
-            fin_df.loc[n]=[parent_q, a.link]
+    # TODO: add more columns
 
+    def to_pandas(self, columns=["parent_question", "link"]):
+        """get a pandas df with all questions and answers in query"""
+        final_lst = []
+        for q in self.questions:
+            if q.answers:
+                final_lst += [[str(q),str(a)] for a in q.answers]
+            else:
+                final_lst.append([str(q), ""])
+
+        fin_df = pd.DataFrame(final_lst, columns=columns)
         return fin_df
 
 
+if __name__ == '__main__':
+    p = Question("What is a prot?", True)
+    p2 = "What is a prit?"
+    p3 = "What is a prut?"
 
+    query3 = Question_holder([p])
+    query3.set_question(p2, p.unique_id)
+    query3.set_question(p3, p.unique_id)
+    query3.set_question(p3, query3.questions[1].unique_id)
+    a2 = "www.blabla.com"
+    a3 = "www.blibli.com"
+    p_q = p.unique_id
+    A2 = Answer(a2, p_q)
+
+    query3.ingest_new_answers({p2:[a2,a3]})
+
+
+    got_q = query3.get_question(q_id=p.unique_id)
+    got_q2 = query3.get_question(q_str=str(p2))
+    pass
+    print(got_q)
+    my_df = query3.to_pandas()
+    print(my_df)
