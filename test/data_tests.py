@@ -97,7 +97,7 @@ class Test_classes(unittest.TestCase):
         output = query3.to_pandas()
         print(output)
         self.assertEqual(len(output), 2)
-        self.assertEqual(output.shape(), [2,2])
+        self.assertEqual(output.shape, (2,2))
 
 
     def test_question_holder_remove_unwanted_questions(self):
@@ -112,10 +112,14 @@ class Test_classes(unittest.TestCase):
         query3.set_question(p2, p.unique_id)
         query3.set_question(p3, p.unique_id)
         query3.set_question(p3, query3.questions[1].unique_id)
-        query3.remove_unwanted_questions([p2,p3], "k")
 
+        query3.remove_unwanted_questions([p2,p3], "k")
         self.assertEqual(len(query3.questions), 2)
         self.assertEqual(str(query3.questions[-1]), p3)
+
+        query3.remove_unwanted_questions([p, p3], "r")
+        self.assertEqual(len(query3.questions), 1)
+        self.assertEqual(str(query3.questions[-1]), p2)
 
     def test_question_holder_set_answer(self):
         print("testing set_answer method of Question_holder class ")
@@ -142,6 +146,17 @@ class Test_classes(unittest.TestCase):
         query4.ingest_new_answers({str(p): [a2,a3]} )
         self.assertEqual(len(query4.answers), 2)
         self.assertEqual(len(query4.answers[-1].parent_questions), 1)
+
+    def test_question_holder_main_get_questions(self):
+        from main import main_get_questions
+        q = "What is a damselfish?"
+        query = main_get_questions(q)
+        self.assertEqual(isinstance(query, src.classes.Question-holder, True))
+
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main()

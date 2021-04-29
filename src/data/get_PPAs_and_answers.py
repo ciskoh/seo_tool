@@ -164,12 +164,14 @@ def download_results(client, response_ready, id_list, **kwargs) -> list:
 
 
 # extract - extract relevant_data from response_ready
-def extract_results(results, mode):
+def extract_results(results, mode, limit=50):
     """extract result from json style list returned by download_results:
     parameters:
-    results:  json style list with results
-    mode: "ppa" for questions, "organic" for link of answers
-    returns list of lists
+    results:  json style - list with results
+    mode: str- "ppa" for questions, "organic" for link of answers
+    limit: int - max number of items per keyword
+
+    Returns list of lists
     """
     clean_results = {}
     for r in results:
@@ -180,14 +182,15 @@ def extract_results(results, mode):
                     clean_results[r['keyword']] = ppas
         if mode == "link":
             links = [item['url'] for item in r['items'] if item['type'] == 'organic']
-            clean_results[r['keyword']] = links
+            clean_results[r['keyword']] = links[:limit]
     return clean_results
     # do something with result
 
 
 # Main function
 def main(str_list, **kwargs):
-    print("get_qu:", kwargs.get("credentials"))
+    if not kwargs.get("credentials"):
+        kwargs['credentials'] = get_credentials()
     client, post_data = create_request(str_list, priority=2, **kwargs)
     response = send_request(client, post_data)
     id_list = check_api_connection(post_data, response)

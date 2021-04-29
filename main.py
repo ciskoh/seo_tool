@@ -27,13 +27,14 @@ def main_get_questions(first_q=None, **kwargs):
     # step 2 generate automatic questions
     gen_qs = generate_automatic_questions(q.keywords, Path("references", "words_for_questions.csv"))
     # transform gen_qs into a list of Question objects
-    query.ingest_new_questions(gen_qs)
     # step 3 get people also ask questions
-    ppas = get_ppas_and_answers(query.questions, mode="ppa", **kwargs)['ppa']
-    query.ingest_new_questions(ppas)
+    ppas = get_ppas_and_answers(gen_qs, mode="ppa", **kwargs)['ppa']
+    ppas_list=sum(ppas.values(), [])
+    query.ingest_new_questions(ppas_list)
     return query
 
 def main_get_answers(query, **kwargs):
+    """downloads answers and adds them to the query"""
     # step4 get answers for all questions
     if not isinstance(query, Question_holder):
         print("main "+str(type(query)))
@@ -41,7 +42,7 @@ def main_get_answers(query, **kwargs):
     if not len(query.questions) >= 2:
         raise ValueError("no questions found in query")
 
-    new_answers = get_ppas_and_answers(query.questions, mode="link", **kwargs)['link']
+    new_answers = get_ppas_and_answers([str(q) for q in query.questions], mode="link", **kwargs)['link']
     query.ingest_new_answers(new_answers)
 
     return query
@@ -62,5 +63,5 @@ if __name__ == '__main__':
     # ppas=clean_res["ppa"]
     # query.ingest_new_questions(ppas)
     # print(ppas)
-    # query = main_get_questions("what is a damselfish?")
+    query = main_get_questions("what is a damselfish?")
     pass
