@@ -69,9 +69,14 @@ def get_table_download_link(df) -> str:
 def streamlit_main():
     """main function to create a streamlit GUI"""
     flow_control = create_flow_control(6)
-    credentials=[st.secrets['uname'], st.secrets['pw']]
-    if st.button("Press to Start") and not any(flow_control):
+    credentials = [st.secrets['uname'], st.secrets['pw']]
+    if st.button("Press to Start"):
         flow_control[0] = True
+
+    if st.button("Press to reboot"):
+        flow_control = [False] * len(flow_control)
+        query = None
+        user_input = None
 
     # get user input
     if flow_control[0]:
@@ -81,14 +86,15 @@ def streamlit_main():
         * Keywords can be any number of words, divided by a space    
         """)
         user_input = st.text_input("Enter a question or keywords", "")
-        if st.button("Confirm") or user_input:
+        if st.button("Confirm") and user_input:
             flow_control[1] = True
+
     # search for People also Ask questions
     if flow_control[1]:
         st.warning("Downloading most relevant questions from Google.\n This can take up to 2 minute")
         query = streamlit_get_ppa(user_input, credentials=credentials)
-        question_list = query.to_list("q")
-        if question_list:
+        if query:
+            question_list = query.to_list("q")
             st.success("All question retrieved")
             st.write(question_list)
             flow_control[2] = True
