@@ -124,6 +124,10 @@ def streamlit_main():
         st.markdown("""##Step 3. Get metrics""")
         st.warning("metrics not implemented yet!")
 
+        reboot = st.button("Restart with new query")
+        if reboot:
+            flow_control = None
+
 
 if __name__ == '__main__':
     streamlit_main()

@@ -3,6 +3,10 @@
 Author: dr. Matteo Jucker Riva 
 github.com/ciskoh
 
+
+[Now available on streamlit!](https://tinyurl.com/9crw7mpx)
+
+
 Licenced under MIT licence
 
 This tool allows to formulate questions based on user provided keywords and analyses the first page of google to evaluate how well the interwebs answers to a question.
