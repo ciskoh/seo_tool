@@ -70,8 +70,6 @@ def streamlit_main():
     """main function to create a streamlit GUI"""
     flow_control = create_flow_control(6)
     credentials = [st.secrets['uname'], st.secrets['pw']]
-    if st.button("Press to Start"):
-        flow_control[0] = True
 
     if st.button("Press to reboot"):
         flow_control = [False] * len(flow_control)

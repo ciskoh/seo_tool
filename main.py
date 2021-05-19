@@ -49,19 +49,11 @@ def main_get_answers(query, **kwargs):
 
 
 if __name__ == '__main__':
-    # import json
-    # temp_path = "data/raw/clean_results.json"
-    # with open(temp_path, "r") as file:
-    #     clean_res = json.load(file)
-    # q=Question("what is a damselfish?", True)
-    # query = Question_holder([q])
-    # # step 2 generate automatic questions
-    # gen_qs = generate_automatic_questions(q.keywords, Path("references", "words_for_questions.csv"))
-    # # transform gen_qs into a list of Question objects
-    # query.ingest_new_questions({str(q):gen_qs})
-    # print(str(query))
-    # ppas=clean_res["ppa"]
-    # query.ingest_new_questions(ppas)
-    # print(ppas)
+
+    # store object for testing
     query = main_get_questions("what is a damselfish?")
+    query = main_get_answers(query)
+    test = query.to_pandas().to_dict()
+    import pickle
+    pickle.dump(query, open(Path("data", "test_query.p"), "wb"))
     pass
