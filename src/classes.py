@@ -81,14 +81,16 @@ class Question:
 class Answer:
     """class containing answer to a question and related metric"""
     unique_id: str = None
+    parent_questions = set([])
     link: str = None
     metrics = None
-    parent_questions = set([])
+    text: list = None
     def __init__(self, link, q_id):
         self.unique_id: str = str(self.create_unique_id())
         self.link: str = link
         self.parent_questions: set = set([q_id])
         self.metrics = None
+        self.text = None
 
     def create_unique_id(self):
         unique_id = uuid.uuid4()
@@ -119,10 +121,10 @@ class Question_holder:
     def __str__(self):
         if self.questions:
             fin_str = "Questions: "
-            fin_str += "; ".join([str(q) for q in self.questions])
+            fin_str += "; ".join(str(q) for q in self.questions)
         if self.answers:
             fin_str += "\n Answers: "
-            fin_str += "; ".join([str(a) for a in self.answers])
+            fin_str += "; ".join(str(a) for a in self.answers)
         return fin_str
 
     def ingest_new_questions(self, new_questions):
@@ -155,7 +157,7 @@ class Question_holder:
         if isinstance(new_q, Question):
             raise NotImplementedError("new_q must be a string for now!")
 
-        parent_q_id = parent_q_id if parent_q_id else self.main_question_id
+        parent_q_id = parent_q_id or self.main_question_id
 
         if new_q in [str(q) for q in self.questions]:
             existing_q = [q for q in self.questions if str(q) == new_q][0]
