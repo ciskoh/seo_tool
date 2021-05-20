@@ -1,5 +1,7 @@
 """module to get the content of identified links using
-request and beautiful soup also with multi-threading"""
+request and beautiful soup also with multi-threading
+
+ATM it updates the text attribute in Answer objects"""
 
 import sys
 
@@ -49,12 +51,11 @@ def thread_function_wrapper(answer,):
     print("starting in-thread operations")
     try:
         response = launch_request(answer.link)
-        response = launch_request(answer.link)
         text = parse_text_in_response(response)
-        answer.text = text
     except ConnectionError:
-        pass
+        text = ""
     finally:
+        answer.text = text
         return None
 
 def main(question: Question) -> Question:
